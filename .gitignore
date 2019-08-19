@@ -105,3 +105,10 @@ venv.bak/
 
 # qsub logs
 pbslogs
+
+# data files
+data
+
+# temp folders
+tmp
+temp
