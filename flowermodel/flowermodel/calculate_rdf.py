@@ -2,28 +2,20 @@ import pandas as pd
 import numpy as np
 
 
-class blobrdf:
-    def __init__(self, vid, blobs, image_idx, color1, color2):
-        print('get blob')
+class framerdf:
+    def __init__(self, vid, blobs, image_idx, color1, color2, nbins=100):
         blob = blobs[blobs['frame'] == image_idx]
-        print('get X1, X2')
         self.X1 = blob.loc[blob['color'] == color1, ['x', 'y']].values
         self.X2 = blob.loc[blob['color'] == color2, ['x', 'y']].values
 
-#         self.vid_qc(vid)
-        print('get L1, L2')
-        (self.L1, self.L2, _) = vid.get_data(0).shape
-        if self.L1!=self.L2: 
-            print('The images are not exactly squares. Using the minumum dimension for analysis')
+
+#         (self.L1, self.L2, _) = vid.get_data().shape
         
-        print('get dist')
         self.get_blob_dists()
-        print('get cell count ')
         self.get_cell_counts_for_rdf()
         
-    def vid_qc(self, vid):
-        assert np.all(np.diff(np.array([vid.get_data(0).shape for n in range(vid.count_frames())]), 
-                      axis=0) == 0), 'Some video frames have a different size'
+        self.rvals, self.rdf = self.calculate_rdf(nbins=nbins)
+        
 
     def get_blob_dists(self):
         '''
@@ -54,6 +46,21 @@ class blobrdf:
         self.maxL = min(self.L1, self.L2)
         self.N = (self.dist <= self.maxL).sum()
 
-    def calculate_rdf(self, r1, r2):
-        rdf = ((r1 <= self.dist) & (self.dist < r2)).sum()/ self.N
+    def calculate_point_rdf(self, r1, r2):
+        a = np.pi * (r2**2 - r1**2)
+        rdf = ((r1 <= self.dist) & (self.dist < r2)).sum()/ self.N/ a
         return rdf
+    
+    
+    def calculate_rdf(self, nbins=100):
+
+        rvals = np.linspace(0, self.maxL, nbins)
+
+        rdf = np.zeros_like(rvals)
+        for idx in range(len(rvals)-1):
+            rdf[idx] = self.calculate_point_rdf(rvals[idx], rvals[idx+1])
+
+        rvals = rvals[:-1]
+        rdf = rdf[:-1]
+
+        return rvals, rdf
