@@ -16,14 +16,19 @@ class __vidrdf__:
             self.vid = vidfile
         self.num_frames = self.vid.count_frames()
         (self.L1, self.L2, _) = self.vid.get_data(0).shape
-        self.maxL = min(self.L1, self.L2)       
+        self.maxL = min(self.L1, self.L2)
 
 class vidrdf(__vidrdf__):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, data_path, moviefile, **kwargs):
+        self.data_path = data_path
+        self.moviefile = moviefile
+        self.blobfile = '{:s}/blobs/{:s}.blob.csv'.format(data_path, moviefile)
+        self.vidfile = '{:s}/movies/{:s}'.format(data_path, moviefile)
+
+        super().__init__(self.blobfile, self.vidfile, **kwargs)
         self.vid_qc()
 
-    def get_rdf(self, color1, color2):       
+    def __get_rdf__(self, color1, color2):       
         rdfs = []
         for image_idx in tqdm(range(self.num_frames)):
             rdf = framerdf(self.blobs, self.vid, image_idx, color1, color2)
@@ -35,11 +40,23 @@ class vidrdf(__vidrdf__):
         assert np.all(np.diff(np.array([self.vid.get_data(0).shape for n in range(self.num_frames)]), 
                       axis=0) == 0), 'Some video frames have a different size'
            
-        if self.L1!=self.L2: 
+        if self.L1!=self.L2:
             print('The images are not exactly squares. Using the minumum dimension for analysis')
+
+    def get_rdf(self, color1, color2, save_to_file=True):
+        self.rdf_file = '{:s}/blobs/{:s}.blob.rdf.color_{:s}{:s}.csv'.format(self.data_path, self.moviefile, color1, color2)
+        rvals, rdfs = self.__get_rdf__(color1, color2)
+        rdfdf = pd.DataFrame(rdfs, columns=rvals)
+        rdfdf.columns.name = 'r'
+        rdfdf.index.name = 'frame index'
+
+        if save_to_file:
+            rdfdf.to_csv(self.rdf_file)
+        return rdfdf
 
 class framerdf(__vidrdf__):
     def __init__(self, blobfile, vidfile, image_idx, color1, color2):
+        self.set_zeros_to_infinity = (color1==color2) # set zero distances to infinity to ignore self-distances
         super().__init__(blobfile, vidfile)
         
         blob = self.blobs[self.blobs['frame'] == image_idx]
@@ -50,7 +67,6 @@ class framerdf(__vidrdf__):
         self.get_cell_counts_for_rdf()
         
         self.rvals, self.rdf = self.calculate_rdf()
-        
 
     def get_blob_dists(self):
         '''
@@ -67,6 +83,9 @@ class framerdf(__vidrdf__):
                 dist = distance_matrix(self.X1, X2shift)
                 dists.append(dist)
         self.dist = np.hstack(dists)
+        
+        if self.set_zeros_to_infinity:
+            self.dist[self.dist == 0]  = np.inf
 
     def get_cell_counts_for_rdf(self):
         '''
