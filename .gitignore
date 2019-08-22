@@ -110,5 +110,7 @@ pbslogs
 data
 
 # temp folders
-tmp*
-temp*
+tmp
+tmp.*
+tmp-*
+temp

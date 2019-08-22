@@ -1,15 +1,15 @@
 #!/bin/bash
 #PBS -l nodes=1:ppn=2
-#PBS -l walltime=0:10:00
+#PBS -l walltime=0:30:00
 #PBS -l mem=4GB
 #PBS -q batch
-#PBS -N blob
-#PBS -t 0-270
+#PBS -N blob8
+#PBS -t 0-33
 #PBS -o pbslogs/$PBS_JOBNAME.o
 #PBS -e pbslogs/$PBS_JOBNAME.e
 
 cd $PBS_O_WORKDIR
-FILE="../data/movies/41586_2019_1429_MOESM4_ESM.mov"
+FILE="/projects/chuang-lab/jnh/flower/data/movies/41586_2019_1429_MOESM8_ESM.mov"
 . /projects/chuang-lab/jnh/miniconda3/etc/profile.d/conda.sh
 conda activate flower
 flowermodel blob --filename $FILE --blob-index $PBS_ARRAYID
