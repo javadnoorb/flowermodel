@@ -25,10 +25,28 @@ if __name__ == "__main__":
 
     #### framecount_parser ####
     framecount_parser = subparsers.add_parser("framecount", help='Count the number of frames in video.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)    
+
     framecount_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
                             help="The video file of time-course of GFP/RFP-tagged cells.")
 
     framecount_parser.set_defaults(func=count_frames)
 
+    #### pbs_parser ####   
+    pbs_parser = subparsers.add_parser("pbs", help='Create a PBS job array file for submitting to the cluster using qsub.', 
+                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    pbs_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
+                            help="The video file of time-course of GFP/RFP-tagged cells.")
+    pbs_parser.add_argument("--jobname", type=str, metavar='<path>', default='blob',
+                            help="Name of the jobs to be submitted.")
+    pbs_parser.add_argument("--walltime", type=str, metavar='<path>', default='0:30:00',
+                            help="Walltime requested on the cluster.")
+    pbs_parser.add_argument("--num-cores", type=str, metavar='<path>', default=2,
+                            help="Number of cores requested on the cluster.")
+    pbs_parser.add_argument("--pbslogs", type=str, metavar='<path>', default='pbslogs',
+                            help="The path to create for storing the PBS logs.")
+
+    pbs_parser.set_defaults(func=create_pbs)
+    ########################## 
     args = parser.parse_args()
     args.func(args)
