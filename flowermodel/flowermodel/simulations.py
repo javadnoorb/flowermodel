@@ -8,7 +8,8 @@ import time
 
 class Colony:
     np.seterr(all='raise')
-    def __init__(self, ModelParams, SimulationParams):
+    def __init__(self, ModelParams, SimulationParams, plotrgb=True):
+        self.plotrgb = plotrgb
         self.ModelParams = ModelParams
         self.SimulationParams = SimulationParams
         self.h = SimulationParams['h']                      # Interval size in xy-direction.    
@@ -109,18 +110,19 @@ class Colony:
                 display.display(plt.gcf())
                 time.sleep(0.1)
 
-    def PlotConcentrations(self):
-#         plt.figure(figsize = (15,5))
-#         plt.subplot(1,2,1)
-#         plt.imshow(self.c1, cmap='afmhot');plt.colorbar();plt.title('c1',fontsize=16,fontweight='bold')
-#         plt.subplot(1,2,2)
-#         plt.imshow(self.c2, cmap='afmhot');plt.colorbar();plt.title('c2',fontsize=16,fontweight='bold')
-        self.rgb = np.zeros((*self.c1.shape, 3))
-        self.rgb[:, :, 0] = self.c1
-        self.rgb[:, :, 1] = self.c2
-        self.rgb = self.rgb.copy()
-        self.rgb[self.rgb > 1] = 1
-        self.rgb[self.rgb < 0] = 0
-        plt.figure(figsize=(7, 7))
-        plt.imshow(self.rgb)
+    def PlotConcentrations(self):       
+        if self.plotrgb:
+            plt.figure(figsize=(7, 7))
+            self.rgb[:, :, 0] = self.c1
+            self.rgb[:, :, 1] = self.c2
+            self.rgb[self.rgb > 1] = 1
+            self.rgb[self.rgb < 0] = 0
+            plt.imshow(self.rgb)
+        else:
+            plt.figure(figsize = (15,5))
+            plt.subplot(1,2,1)
+            plt.imshow(self.c1, cmap='afmhot');plt.colorbar();plt.title('c1',fontsize=16,fontweight='bold')
+            plt.subplot(1,2,2)
+            plt.imshow(self.c2, cmap='afmhot');plt.colorbar();plt.title('c2',fontsize=16,fontweight='bold')
+
 
