@@ -4,17 +4,25 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 
-def plot_blob_overlay(vid, img_idx, blobs):
+def plot_blob_overlay(vid, img_idx, blobs, plot_small_circles=True):
     img = fb.get_image(vid, img_idx)
 
     _, ax = plt.subplots(1, 1, figsize=(8,8))
     ax.imshow(img)
 
-    def draw_circle(row, ax):
-        c = plt.Circle((row['y'], row['x']), row['radius'], color=row['color'], linewidth=2, fill=False);
-        ax.add_patch(c);
-
-    blobs[blobs['frame'] == img_idx].apply(lambda row: draw_circle(row, ax), axis=1);
+    if plot_small_circles:
+        sns.scatterplot(x='y', y='x', data=blobs[blobs['frame'] == img_idx],
+                        hue='color', edgecolor='b',
+                        palette={'g':'g', 'r':'r'}, legend=False)
+        plt.xlabel('')
+        plt.ylabel('')    
+        plt.xlim(0, img.shape[0]);
+        plt.ylim(img.shape[1], 0);
+    else:
+        def draw_circle(row, ax):
+            c = plt.Circle((row['y'], row['x']), row['radius'], color=row['color'], linewidth=2, fill=False);
+            ax.add_patch(c);
+        blobs[blobs['frame'] == img_idx].apply(lambda row: draw_circle(row, ax), axis=1);
 
 def plot_rdf_heatmap(rdf_file):
     rdfdf = pd.read_csv(rdf_file, index_col=0)
