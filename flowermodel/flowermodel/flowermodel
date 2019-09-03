@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     blob_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
                             help="The video file of time-course of GFP/RFP-tagged cells.")
-    blob_parser.add_argument("--blob-index", type=int, metavar='<value>', required=True,
+    blob_parser.add_argument("--frame-index", type=int, metavar='<value>', required=True,
                             help='Index of the video frame to do the blob detection on')                            
     blob_parser.add_argument("--out-dir", type=str, metavar='<path>', default='../data/blobs/', 
                             help='Output directory where to store the blob coordinates.') 
