@@ -114,3 +114,6 @@ tmp
 tmp.*
 tmp-*
 temp
+.DS_Store
+._.DS_Store
+

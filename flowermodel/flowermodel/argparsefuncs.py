@@ -42,3 +42,28 @@ flowermodel blob --filename $FILE --blob-index $PBS_ARRAYID
     
     if not os.path.exists(args.pbslogs):
         os.makedirs(args.pbslogs)
+        
+        
+def clip_video(args):
+    '''
+    Clip videos which have multiple panels in them into
+    separete videos.
+    '''
+    from moviepy.editor import VideoFileClip
+
+    clip = VideoFileClip(args.filename)
+
+    L = clip.get_frame(0).shape[0]//args.nrows
+
+    clipspath = args.filename+'.clips'
+    util.mkdir_if_not_exist(clipspath)
+
+    for i in range(args.nrows):
+        for j in range(args.ncols):
+            clipname = 'clip-{:d}-{:d}.mp4'.format(i, j)
+#             print('Analyzing ', clipname)        
+            clipfile = os.path.join(clipspath, clipname)
+
+            croppedclip = clip.crop(y1=i*L, x1=j*L, width=L, height=L)       
+            croppedclip.write_videofile(clipfile)
+            print('#'*30+'\n')

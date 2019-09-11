@@ -32,7 +32,7 @@ if __name__ == "__main__":
     framecount_parser.set_defaults(func=count_frames)
 
     #### pbs_parser ####   
-    pbs_parser = subparsers.add_parser("pbs", help='Create a PBS job array file for submitting to the cluster using qsub.', 
+    pbs_parser = subparsers.add_parser("pbs", help='Create a PBS job array file for submitting blob detection tasks to the cluster using qsub.', 
                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     pbs_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
@@ -47,6 +47,19 @@ if __name__ == "__main__":
                             help="The path to create for storing the PBS logs.")
 
     pbs_parser.set_defaults(func=create_pbs)
+
+    #### clip_parser ####   
+    clip_parser = subparsers.add_parser("clip", help='Clip videos with multiple subfields into separate video files.', 
+                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    clip_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
+                            help="The video file of time-course of GFP/RFP-tagged cells.")
+    clip_parser.add_argument("--nrows", type=int, metavar='<value>', default=2,
+                            help="Number of rows in the video.")
+    clip_parser.add_argument("--ncols", type=int, metavar='<value>', default=4,
+                            help="Number of columns in the video.")
+
+    clip_parser.set_defaults(func=clip_video)
     ########################## 
     args = parser.parse_args()
     args.func(args)
