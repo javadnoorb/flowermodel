@@ -31,6 +31,25 @@ if __name__ == "__main__":
 
     framecount_parser.set_defaults(func=count_frames)
 
+    #### blobsummary_parser ####   
+    blobsummary_parser = subparsers.add_parser("blobsummary", help='Combine blobs from individual frames into a single file', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+                   
+    blobsummary_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
+                            help="The video file of time-course of GFP/RFP-tagged cells.")
+ 
+    blobsummary_parser.add_argument("--infer-monocolor", action='store_true',
+                            help='Infer if the video is monocolor or not based on the percentage of blobs present in each channel. Assumes channel with very few blobs (smaller than a threshold) to be false-positives' ) 
+                            
+    blobsummary_parser.set_defaults(func=get_video_blobs)
+
+    #### framecount_parser ####
+    framecount_parser = subparsers.add_parser("framecount", help='Count the number of frames in video.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)    
+
+    framecount_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
+                            help="The video file of time-course of GFP/RFP-tagged cells.")
+
+    framecount_parser.set_defaults(func=count_frames)
+
     #### pbs_parser ####   
     pbs_parser = subparsers.add_parser("pbs", help='Create a PBS job array file for submitting blob detection tasks to the cluster using qsub.', 
                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -45,6 +64,8 @@ if __name__ == "__main__":
                             help="Number of cores requested on the cluster.")
     pbs_parser.add_argument("--pbslogs", type=str, metavar='<path>', default='pbslogs',
                             help="The path to create for storing the PBS logs.")
+    pbs_parser.add_argument("--out-dir", type=str, metavar='<path>', default='../data/blobs/', 
+                            help='Output directory where to store the blob coordinates.') 
 
     pbs_parser.set_defaults(func=create_pbs)
 

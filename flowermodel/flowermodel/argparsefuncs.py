@@ -2,6 +2,8 @@ import os
 from flowermodel import util
 from flowermodel.find_blobs import get_allframes_blobs
 import imageio
+import glob
+import pandas as pd
 
 def get_frame_blobs(args):
     outputdir = os.path.join(args.out_dir, os.path.basename(args.filename))
@@ -33,9 +35,9 @@ cd $PBS_O_WORKDIR
 FILE="{moviefile}"
 . /projects/chuang-lab/jnh/miniconda3/etc/profile.d/conda.sh
 conda activate flower
-flowermodel blob --filename $FILE --blob-index $PBS_ARRAYID
+flowermodel blob --filename $FILE --frame-index $PBS_ARRAYID  --out-dir {out_dir}
 '''.format(num_cores=args.num_cores, walltime=args.walltime, jobname=args.jobname, moviefile=args.filename,
-               last_frame_index=last_frame_index, pbslogs=args.pbslogs)
+               last_frame_index=last_frame_index, pbslogs=args.pbslogs, out_dir=args.out_dir)
 
     with open('{}.pbs'.format(args.jobname), 'w') as f:
         f.write(pbs_text)
@@ -43,7 +45,21 @@ flowermodel blob --filename $FILE --blob-index $PBS_ARRAYID
     if not os.path.exists(args.pbslogs):
         os.makedirs(args.pbslogs)
         
+def get_video_blobs(args, save_output=True, monocolor_blob_threshold=0.1):
+    files = glob.glob('../data/blobs/{:s}/blob*.csv'.format(args.filename))
+    blobs = [pd.read_csv(file) for file in files]
+    blobs = pd.concat(blobs).sort_values(['frame', 'color', 'x', 'y']).reset_index(drop=True)
+    
+    if args.infer_monocolor: # remove all blobs of one color if too few are present 
+        blobcolors = blobs['color'].value_counts(normalize=True) > monocolor_blob_threshold
+        blobcolors = blobcolors[blobcolors].index
+        blobs = blobs[blobs['color'].isin(blobcolors)]        
         
+    if save_output:
+        blobs.to_csv('../data/blobs/{:s}.blob.csv'.format(args.filename), index=False)
+    else:
+        return blobs
+
 def clip_video(args):
     '''
     Clip videos which have multiple panels in them into

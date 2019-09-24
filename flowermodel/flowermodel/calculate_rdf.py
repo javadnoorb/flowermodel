@@ -55,9 +55,9 @@ class vidrdf(__vidrdf__):
         return rdfdf
 
 class framerdf(__vidrdf__):
-    def __init__(self, blobfile, vidfile, image_idx, color1, color2):
+    def __init__(self, blobfile, vidfile, image_idx, color1, color2, nbins=100):
         self.set_zeros_to_infinity = (color1==color2) # set zero distances to infinity to ignore self-distances
-        super().__init__(blobfile, vidfile)
+        super().__init__(blobfile, vidfile, nbins=nbins)
         
         blob = self.blobs[self.blobs['frame'] == image_idx]
         self.X1 = blob.loc[blob['color'] == color1, ['x', 'y']].values
@@ -116,3 +116,13 @@ class framerdf(__vidrdf__):
         rdf = rdf[:-1]
         
         return rvals, rdf      
+
+    
+def get_all_rdfs(data_path, moviefile, nbins=100):
+    rdfobj = vidrdf(data_path, moviefile, nbins=nbins)
+    blobcolors = rdfobj.blobs['color'].unique()
+
+    for color1 in blobcolors:
+        for color2 in blobcolors:
+            rdfdf = rdfobj.get_rdf(color1, color2)
+    
