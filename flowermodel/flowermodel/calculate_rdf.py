@@ -92,7 +92,7 @@ class framerdf(__vidrdf__):
         self.dist = np.hstack(dists)
         
         if self.set_zeros_to_infinity:
-            self.dist[self.dist == 0]  = np.inf
+            self.dist[self.dist == 0] = np.inf
 
     def get_cell_counts_for_rdf(self):
         '''

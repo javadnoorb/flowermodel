@@ -11,8 +11,7 @@ def get_frame_blobs(args):
 
     blobs = get_allframes_blobs(args.filename, min_idx=args.frame_index, max_idx=args.frame_index+1)
     blobs.to_csv(os.path.join(outputdir, 'blob{:d}.csv'.format(args.frame_index)), index=False)
-    
-    
+        
 def count_frames(args):
     vid = imageio.get_reader(args.filename,  'ffmpeg')
     print(vid.count_frames())
