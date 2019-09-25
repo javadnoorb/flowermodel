@@ -3,9 +3,10 @@ import numpy as np
 from tqdm import tqdm
 
 class __vidrdf__:
-    def __init__(self, blobfile, vidfile, nbins=100):
+    def __init__(self, blobfile, vidfile, nbins=100, shellwidth=1):
         import imageio
         self.nbins = nbins
+        self.shellwidth = shellwidth
         if type(blobfile) == str:
             self.blobs = pd.read_csv(blobfile)
         else:
@@ -31,7 +32,7 @@ class vidrdf(__vidrdf__):
     def __get_rdf__(self, color1, color2):       
         rdfs = []
         for image_idx in tqdm(range(self.num_frames)):
-            rdf = framerdf(self.blobs, self.vid, image_idx, color1, color2)
+            rdf = framerdf(self.blobs, self.vid, image_idx, color1, color2, nbins=self.nbins)
             rdfs.append(rdf.rdf)
         rvals = rdf.rvals
         return rvals, np.array(rdfs)
@@ -54,11 +55,17 @@ class vidrdf(__vidrdf__):
             rdfdf.to_csv(self.rdf_file)
         return rdfdf
 
+    def get_rdfs_for_all_colorpairs(self):
+        blobcolors = self.blobs['color'].unique()
+
+        for color1 in blobcolors:
+            for color2 in blobcolors:
+                rdfdf = self.get_rdf(color1, color2)
+
 class framerdf(__vidrdf__):
-    def __init__(self, blobfile, vidfile, image_idx, color1, color2, nbins=100):
+    def __init__(self, blobfile, vidfile, image_idx, color1, color2, **kwargs):
         self.set_zeros_to_infinity = (color1==color2) # set zero distances to infinity to ignore self-distances
-        super().__init__(blobfile, vidfile, nbins=nbins)
-        
+        super().__init__(blobfile, vidfile, **kwargs)
         blob = self.blobs[self.blobs['frame'] == image_idx]
         self.X1 = blob.loc[blob['color'] == color1, ['x', 'y']].values
         self.X2 = blob.loc[blob['color'] == color2, ['x', 'y']].values
@@ -105,24 +112,37 @@ class framerdf(__vidrdf__):
     
     
     def calculate_rdf(self):
-
         rvals = np.linspace(0, self.maxL, self.nbins)
 
         rdf = np.zeros_like(rvals)
-        for idx in range(len(rvals)-1):
-            rdf[idx] = self.calculate_point_rdf(rvals[idx], rvals[idx+1])
+        for idx in range(len(rvals)-self.shellwidth):
+            rdf[idx] = self.calculate_point_rdf(rvals[idx], rvals[idx+self.shellwidth])
 
         rvals = rvals[:-1]
         rdf = rdf[:-1]
         
         return rvals, rdf      
 
-    
-def get_all_rdfs(data_path, moviefile, nbins=100):
-    rdfobj = vidrdf(data_path, moviefile, nbins=nbins)
-    blobcolors = rdfobj.blobs['color'].unique()
 
-    for color1 in blobcolors:
-        for color2 in blobcolors:
-            rdfdf = rdfobj.get_rdf(color1, color2)
-    
+def get_maxrdf_locs(data_path):
+    import pkg_resources
+    import os
+    import glob
+    import re
+
+    PACKAGE_DATA_PATH = pkg_resources.resource_filename('flowermodel', 'data/')
+    clipmeta = pd.read_csv(os.path.join(PACKAGE_DATA_PATH, 'clip-metadata.txt'), sep='\t')
+    rdffiles = glob.glob(os.path.join(data_path, 'blobs/*.color_*.csv'))
+    rdffiles += glob.glob(os.path.join(data_path, 'blobs/*/*.color_*.csv'))
+    rdffiles = pd.DataFrame(rdffiles, columns=['rdffile'])
+    p = re.compile('(41586_2019_1429_MOESM\d_ESM.*)\.blob.rdf.color_(..)\.csv')
+    rdffiles['movfile'] = rdffiles['rdffile'].map(lambda x: re.search(p, x)[1])
+    rdffiles['color-pair'] = rdffiles['rdffile'].map(lambda x: re.search(p, x)[2])
+    rdffiles = pd.merge(rdffiles, clipmeta, on='movfile', how='left')
+
+    def get_maxrdf_loc(rdf_file):
+        rdf = pd.read_csv(rdf_file, index_col=0)
+        return float(rdf.mean().idxmax())
+
+    rdffiles['maxrdf_loc'] = rdffiles['rdffile'].map(get_maxrdf_loc)
+    return rdffiles

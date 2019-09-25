@@ -6,4 +6,5 @@ setup(name='flowermodel',
       packages=['flowermodel'],
       scripts=['flowermodel/flowermodel'],
       install_requires=open("REQUIREMENTS.txt").readlines(),
+      package_data={'flowermodel': ['data/*']},
       zip_safe=False)
