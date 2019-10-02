@@ -11,7 +11,7 @@ def get_frame_blobs(args):
 
     blobs = get_allframes_blobs(args.filename, min_idx=args.frame_index, max_idx=args.frame_index+1)
     blobs.to_csv(os.path.join(outputdir, 'blob{:d}.csv'.format(args.frame_index)), index=False)
-        
+
 def count_frames(args):
     vid = imageio.get_reader(args.filename,  'ffmpeg')
     print(vid.count_frames())
@@ -38,22 +38,19 @@ flowermodel blob --filename $FILE --frame-index $PBS_ARRAYID  --out-dir {out_dir
 '''.format(num_cores=args.num_cores, walltime=args.walltime, jobname=args.jobname, moviefile=args.filename,
                last_frame_index=last_frame_index, pbslogs=args.pbslogs, out_dir=args.out_dir)
 
-    with open('{}.pbs'.format(args.jobname), 'w') as f:
-        f.write(pbs_text)
-    
-    if not os.path.exists(args.pbslogs):
-        os.makedirs(args.pbslogs)
-        
+    util.__create_pbs__(args.pbs_text, args.jobname, args.pbslogs)
+
+
 def get_video_blobs(args, save_output=True, monocolor_blob_threshold=0.1):
     files = glob.glob('../data/blobs/{:s}/blob*.csv'.format(args.filename))
     blobs = [pd.read_csv(file) for file in files]
     blobs = pd.concat(blobs).sort_values(['frame', 'color', 'x', 'y']).reset_index(drop=True)
-    
+
     if args.infer_monocolor: # remove all blobs of one color if too few are present 
         blobcolors = blobs['color'].value_counts(normalize=True) > monocolor_blob_threshold
         blobcolors = blobcolors[blobcolors].index
         blobs = blobs[blobs['color'].isin(blobcolors)]        
-        
+
     if save_output:
         blobs.to_csv('../data/blobs/{:s}.blob.csv'.format(args.filename), index=False)
     else:

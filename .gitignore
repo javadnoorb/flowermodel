@@ -117,3 +117,6 @@ temp
 .DS_Store
 ._.DS_Store
 
+# nextflow
+nextflow/work
+nextflow/.nextflow*

@@ -108,9 +108,8 @@ class framerdf(__vidrdf__):
     def calculate_point_rdf(self, r1, r2):
         a = np.pi * (r2**2 - r1**2)
         rdf = ((r1 <= self.dist) & (self.dist < r2)).sum()/ self.N/ a
-        return rdf
-    
-    
+        return rdf    
+
     def calculate_rdf(self):
         rvals = np.linspace(0, self.maxL, self.nbins)
 
@@ -121,28 +120,30 @@ class framerdf(__vidrdf__):
         rvals = rvals[:-1]
         rdf = rdf[:-1]
         
-        return rvals, rdf      
+        return rvals, rdf
 
-
-def get_maxrdf_locs(data_path):
+def get_mov_metadata(data_path):
     import pkg_resources
     import os
     import glob
     import re
-
-    PACKAGE_DATA_PATH = pkg_resources.resource_filename('flowermodel', 'data/')
-    clipmeta = pd.read_csv(os.path.join(PACKAGE_DATA_PATH, 'clip-metadata.txt'), sep='\t')
+    
     rdffiles = glob.glob(os.path.join(data_path, 'blobs/*.color_*.csv'))
     rdffiles += glob.glob(os.path.join(data_path, 'blobs/*/*.color_*.csv'))
     rdffiles = pd.DataFrame(rdffiles, columns=['rdffile'])
+    PACKAGE_DATA_PATH = pkg_resources.resource_filename('flowermodel', 'data/')
+    clipmeta = pd.read_csv(os.path.join(PACKAGE_DATA_PATH, 'clip-metadata.txt'), sep='\t')
     p = re.compile('(41586_2019_1429_MOESM\d_ESM.*)\.blob.rdf.color_(..)\.csv')
     rdffiles['movfile'] = rdffiles['rdffile'].map(lambda x: re.search(p, x)[1])
     rdffiles['color-pair'] = rdffiles['rdffile'].map(lambda x: re.search(p, x)[2])
-    rdffiles = pd.merge(rdffiles, clipmeta, on='movfile', how='left')
+    rdffiles = pd.merge(rdffiles, clipmeta, on='movfile', how='left')    
+    return rdffiles
 
+def get_maxrdf_locs(data_path):
     def get_maxrdf_loc(rdf_file):
         rdf = pd.read_csv(rdf_file, index_col=0)
         return float(rdf.mean().idxmax())
 
+    rdffiles = get_mov_metadata(data_path)
     rdffiles['maxrdf_loc'] = rdffiles['rdffile'].map(get_maxrdf_loc)
     return rdffiles
