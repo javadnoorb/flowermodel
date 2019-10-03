@@ -47,7 +47,9 @@ class vidrdf(__vidrdf__):
             print('The images are not exactly squares. Using the minumum dimension for analysis')
 
     def get_rdf(self, color1, color2, save_to_file=True):
-        self.rdf_file = '{:s}/blobs/{:s}.blob.rdf.color_{:s}{:s}.csv'.format(self.data_path, self.moviefile, color1, color2)
+#         self.rdf_file = '{:s}/blobs/{:s}.blob.rdf.color_{:s}{:s}.csv'.format(self.data_path, self.moviefile, color1, color2)
+        self.rdf_file = '{:s}.blob.rdf.color_{:s}{:s}.csv'.format(self.moviefile, color1, color2)
+        self.rdf_file = self.rdf_file.replace('/', '.')
         rvals, rdfs = self.__get_rdf__(color1, color2)
         rdfdf = pd.DataFrame(rdfs, columns=rvals)
         rdfdf.columns.name = 'r'

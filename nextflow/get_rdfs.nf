@@ -1,9 +1,7 @@
 #!/usr/bin/env nextflow
 
-data_path = "'/projects/chuang-lab/jnh/flower/data'"
-
 process get_file_list {
-    conda '/projects/chuang-lab/jnh/miniconda3/envs/flower'
+    conda params.condaenv
 
     output:
         file 'mov_metadata.txt' into mov_metadata
@@ -12,8 +10,7 @@ process get_file_list {
     #!/usr/bin/env python
     import flowermodel.calculate_rdf as fmcal
 
-    mov_metadata = fmcal.get_mov_metadata($data_path)
-    mov_metadata = mov_metadata[:2]
+    mov_metadata = fmcal.get_mov_metadata($params.data_path)
     mov_metadata.to_csv('mov_metadata.txt', index=False, sep='\t')
     """
 }
@@ -26,18 +23,18 @@ mov_metadata
 
 
 process get_rdfs {
-    conda '/projects/chuang-lab/jnh/miniconda3/envs/flower'
+    conda params.condaenv
 
     input:
-    val movfile
-
+        val movfile
+  
     script:
     """
     #!/usr/bin/env python
     import flowermodel.calculate_rdf as fmcal
     import os
     
-    rdfobj = fmcal.vidrdf($data_path, "$movfile", nbins=100, shellwidth=5)
+    rdfobj = fmcal.vidrdf($params.data_path, "$movfile", nbins=$params.nbins, shellwidth=$params.shellwidth)
     rdfobj.get_rdfs_for_all_colorpairs()
     """
 }
