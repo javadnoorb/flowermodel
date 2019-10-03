@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+import copy
 
 class __vidrdf__:
     def __init__(self, blobfile, vidfile, nbins=100, shellwidth=1):
@@ -12,7 +13,8 @@ class __vidrdf__:
         else:
             self.blobs = blobfile
         if type(vidfile) == str:
-            self.vid = imageio.get_reader(vidfile,  'ffmpeg')
+            vid = imageio.get_reader(vidfile,  'ffmpeg')
+            self.vid = copy.copy(vid)
         else:
             self.vid = vidfile
         self.num_frames = self.vid.count_frames()

@@ -13,7 +13,7 @@ process get_file_list {
     import flowermodel.calculate_rdf as fmcal
 
     mov_metadata = fmcal.get_mov_metadata($data_path)
-    mov_metadata = mov_metadata.iloc[:1]
+    mov_metadata = mov_metadata[:2]
     mov_metadata.to_csv('mov_metadata.txt', index=False, sep='\t')
     """
 }
@@ -21,7 +21,7 @@ process get_file_list {
 mov_metadata
     .collectFile()
     .splitCsv(header:true, sep:'\t')
-    .map{ row -> file(row.movfile)}
+    .map{ row -> row.movfile}
     .set {movfile}
 
 
@@ -29,7 +29,7 @@ process get_rdfs {
     conda '/projects/chuang-lab/jnh/miniconda3/envs/flower'
 
     input:
-    file movfile
+    val movfile
 
     script:
     """
@@ -37,14 +37,8 @@ process get_rdfs {
     import flowermodel.calculate_rdf as fmcal
     import os
     
-    #print($data_path, "$movfile")
-    #filename = os.path.join($data_path, 'movies', "$movfile")
-    #print(filename)
-    #print('is file: ', os.path.isfile(filename))
-    #print($movfile.name)
-    rdfobj = fmcal.vidrdf($data_path, filenanme, nbins=100, shellwidth=5)
-    #rdfobj.get_rdfs_for_all_colorpairs()
-    #print('Done')
+    rdfobj = fmcal.vidrdf($data_path, "$movfile", nbins=100, shellwidth=5)
+    rdfobj.get_rdfs_for_all_colorpairs()
     """
 }
 
