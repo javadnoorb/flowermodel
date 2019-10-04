@@ -77,12 +77,12 @@ def clip_video(args):
     
     if (nrows==1) & (ncols==1):
         print('No need for clipping')
-        clipfile = 'clip-0-0.mov' 
+        clipfile = args.filename+'.clip-0-0.mov' 
         os.symlink(args.filename, clipfile) # for output in nextflow implementation
     else:       
         for i in range(nrows):
             for j in range(ncols):
-                clipfile = 'clip-{:d}-{:d}.mov'.format(i, j)
+                clipfile = args.filename+'.clip-{:d}-{:d}.mov'.format(i, j)
                 croppedclip = clip.crop(y1=i*L, x1=j*L, width=L, height=L)       
                 croppedclip.write_videofile(clipfile, codec='mpeg4')
                 print('#'*30+'\n')

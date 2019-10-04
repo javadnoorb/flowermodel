@@ -1,17 +1,17 @@
 #!/usr/bin/env nextflow
 
-movfiles = Channel.fromPath(params.moviespath+'/41586_2019_1429_MOESM3_ESM.mov')
+movfile = Channel.fromPath(params.moviespath+'/*.mov')
 
 process clip_files_if_needed{
     conda params.condaenv
 
     input:
-        file 'movfile.mov' from movfiles
+        file movfile
     output:
         file '*.mov' into clipfiles
     """
     #!/usr/bin/env bash
-    flowermodel clip --filename movfile.mov --infer-dimensions
+    flowermodel clip --filename $movfile --infer-dimensions
     """
 }
 
