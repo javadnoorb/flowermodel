@@ -120,3 +120,4 @@ temp
 # nextflow
 nextflow/work
 nextflow/.nextflow*
+nextflow/report.html
