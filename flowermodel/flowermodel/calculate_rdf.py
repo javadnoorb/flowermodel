@@ -143,11 +143,11 @@ def get_mov_metadata(data_path):
     rdffiles = pd.merge(rdffiles, clipmeta, on='movfile', how='left')    
     return rdffiles
 
-def get_maxrdf_locs(data_path):
-    def get_maxrdf_loc(rdf_file):
-        rdf = pd.read_csv(rdf_file, index_col=0)
-        return float(rdf.mean().idxmax())
+# def get_maxrdf_locs(data_path):
+#     def get_maxrdf_loc(rdf_file):
+#         rdf = pd.read_csv(rdf_file, index_col=0)
+#         return float(rdf.mean().idxmax())
 
-    rdffiles = get_mov_metadata(data_path)
-    rdffiles['maxrdf_loc'] = rdffiles['rdffile'].map(get_maxrdf_loc)
-    return rdffiles
+#     rdffiles = get_mov_metadata(data_path)
+#     rdffiles['maxrdf_loc'] = rdffiles['rdffile'].map(get_maxrdf_loc)
+#     return rdffiles

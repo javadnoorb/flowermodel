@@ -79,6 +79,8 @@ if __name__ == "__main__":
                             help="Number of rows in the video.")
     clip_parser.add_argument("--ncols", type=int, metavar='<value>', default=4,
                             help="Number of columns in the video.")
+    clip_parser.add_argument("--infer-dimensions", action="store_true",
+                             help="infers the dimensions of the panels assuming that each clip is 1024x1024.")
 
     clip_parser.set_defaults(func=clip_video)
     ########################## 

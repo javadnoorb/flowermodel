@@ -5,6 +5,7 @@ import imageio
 import glob
 import pandas as pd
 
+
 def get_frame_blobs(args):
     outputdir = os.path.join(args.out_dir, os.path.basename(args.filename))
     util.mkdir_if_not_exist(outputdir)
@@ -64,18 +65,24 @@ def clip_video(args):
     from moviepy.editor import VideoFileClip
 
     clip = VideoFileClip(args.filename)
-
-    L = clip.get_frame(0).shape[0]//args.nrows
-
-    clipspath = args.filename+'.clips'
-    util.mkdir_if_not_exist(clipspath)
-
-    for i in range(args.nrows):
-        for j in range(args.ncols):
-            clipname = 'clip-{:d}-{:d}.mp4'.format(i, j)
-#             print('Analyzing ', clipname)        
-            clipfile = os.path.join(clipspath, clipname)
-
-            croppedclip = clip.crop(y1=i*L, x1=j*L, width=L, height=L)       
-            croppedclip.write_videofile(clipfile)
-            print('#'*30+'\n')
+    
+    if args.infer_dimensions:
+        L = 1024
+        nrows = clip.get_frame(0).shape[0]//L
+        ncols = clip.get_frame(0).shape[1]//L
+    else:
+        L = clip.get_frame(0).shape[0]//args.nrows
+        nrows = args.nrows
+        ncols = args.ncols
+    
+    if (nrows==1) & (ncols==1):
+        print('No need for clipping')
+        clipfile = 'clip-0-0.mov' 
+        os.symlink(args.filename, clipfile) # for output in nextflow implementation
+    else:       
+        for i in range(nrows):
+            for j in range(ncols):
+                clipfile = 'clip-{:d}-{:d}.mov'.format(i, j)
+                croppedclip = clip.crop(y1=i*L, x1=j*L, width=L, height=L)       
+                croppedclip.write_videofile(clipfile, codec='mpeg4')
+                print('#'*30+'\n')
