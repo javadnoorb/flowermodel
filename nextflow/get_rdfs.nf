@@ -38,25 +38,43 @@ mapseq = {x ->  vallist = []   // get tuples of frame number and video file name
               return vallist
           }
 
+
+
 clipfile_and_framecount_seq = clipfile_and_framecount
-                             .map{mapseq(it)}
-                             .flatMap()
+                                 .map{mapseq(it)}
+                                 .flatMap()
+                                 .randomSample(50, 0)
 
 
 process get_blobs{
     conda params.condaenv
     
     input:
-        set clipfile, framecount from clipfile_and_framecount_seq
+        set framecount, file(clipfile) from clipfile_and_framecount_seq
     output:
-        stdout into tmp
+        set val("${clipfile.baseName}"), file("${clipfile}"), file('*') into frameblobs
     """
     #!/usr/bin/env bash
-    echo "flowermodel blob --filename $clipfile --frame-index $framecount  --out-dir {out_dir}"
+   
+    flowermodel blob --filename $clipfile --frame-index $framecount  --out-dir .
     """
 }
 
-tmp.view()
+
+frameblobs_grouped = frameblobs
+                         .map{[it[0], [it[1], it[2]]]}
+                         .groupTuple()
+
+
+
+process combine_blobfiles{
+    conda params.condaenv
+    
+    input:
+        val item from frameblobs_grouped
+
+    flowermodel blobsummary --filename $moviefile/$clip --infer-monocolor
+}
 
 /*
 process get_file_list {
