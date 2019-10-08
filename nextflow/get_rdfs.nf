@@ -39,11 +39,10 @@ mapseq = {x ->  vallist = []   // get tuples of frame number and video file name
           }
 
 
-
 clipfile_and_framecount_seq = clipfile_and_framecount
                                  .map{mapseq(it)}
                                  .flatMap()
-                                 .randomSample(50, 0)
+//                                 .randomSample(50, 1)
 
 
 process get_blobs{
@@ -52,7 +51,7 @@ process get_blobs{
     input:
         set framecount, file(clipfile) from clipfile_and_framecount_seq
     output:
-        set val("${clipfile.baseName}"), file("${clipfile}"), file('*') into frameblobs
+        set val("${clipfile.baseName}"), file('*') into frameblobs
     """
     #!/usr/bin/env bash
    
@@ -62,8 +61,8 @@ process get_blobs{
 
 
 frameblobs_grouped = frameblobs
-                         .map{[it[0], [it[1], it[2]]]}
                          .groupTuple()
+                         .map{[it[0], it[1].join(" ")]}
 
 
 
@@ -72,9 +71,17 @@ process combine_blobfiles{
     
     input:
         val item from frameblobs_grouped
-
-    flowermodel blobsummary --filename $moviefile/$clip --infer-monocolor
+    output:
+        file "*.blobs.csv" into blobsfile
+    """
+    #!/usr/bin/env bash
+    
+    flowermodel blobsummary --filenames ${item[1]} --infer-monocolor --output-file ${item[0]}.blobs.csv
+    """
 }
+
+
+blobsfile.view()
 
 /*
 process get_file_list {

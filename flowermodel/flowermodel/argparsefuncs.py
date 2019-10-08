@@ -43,8 +43,8 @@ flowermodel blob --filename $FILE --frame-index $PBS_ARRAYID  --out-dir {out_dir
 
 
 def get_video_blobs(args, save_output=True, monocolor_blob_threshold=0.1):
-    files = glob.glob('../data/blobs/{:s}/blob*.csv'.format(args.filename))
-    blobs = [pd.read_csv(file) for file in files]
+#     files = glob.glob('{:s}.blob*.csv'.format(args.filename))
+    blobs = [pd.read_csv(file) for file in args.filenames]
     blobs = pd.concat(blobs).sort_values(['frame', 'color', 'x', 'y']).reset_index(drop=True)
 
     if args.infer_monocolor: # remove all blobs of one color if too few are present 
@@ -53,7 +53,7 @@ def get_video_blobs(args, save_output=True, monocolor_blob_threshold=0.1):
         blobs = blobs[blobs['color'].isin(blobcolors)]        
 
     if save_output:
-        blobs.to_csv('../data/blobs/{:s}.blob.csv'.format(args.filename), index=False)
+        blobs.to_csv(args.output_file, index=False)
     else:
         return blobs
 

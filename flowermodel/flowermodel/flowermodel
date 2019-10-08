@@ -26,7 +26,7 @@ if __name__ == "__main__":
     #### framecount_parser ####
     framecount_parser = subparsers.add_parser("framecount", help='Count the number of frames in video.', formatter_class=argparse.ArgumentDefaultsHelpFormatter)    
 
-    framecount_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
+    framecount_parser.add_argument("--filenames", type=str, metavar='<path>', required=True,
                             help="The video file of time-course of GFP/RFP-tagged cells.")
 
     framecount_parser.set_defaults(func=count_frames)
@@ -34,9 +34,12 @@ if __name__ == "__main__":
     #### blobsummary_parser ####   
     blobsummary_parser = subparsers.add_parser("blobsummary", help='Combine blobs from individual frames into a single file', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
                    
-    blobsummary_parser.add_argument("--filename", type=str, metavar='<path>', required=True,
-                            help="The video file of time-course of GFP/RFP-tagged cells.")
- 
+    blobsummary_parser.add_argument("--filenames", nargs='+', metavar='<path>', required=True,
+                            help="List of files containing blob coordinates for each frame.")
+    blobsummary_parser.add_argument("--output-file", type=str, metavar='<path>', required=True,
+                            help="Output combined blob coordinates.")
+                            
+
     blobsummary_parser.add_argument("--infer-monocolor", action='store_true',
                             help='Infer if the video is monocolor or not based on the percentage of blobs present in each channel. Assumes channel with very few blobs (smaller than a threshold) to be false-positives' ) 
                             
