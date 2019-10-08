@@ -15,9 +15,48 @@ process clip_files_if_needed{
     """
 }
 
-clipfiles
-    .flatMap()
-    .subscribe{ println "${it}" }
+clipfile = clipfiles.flatMap()
+
+process count_frames{
+    conda params.condaenv
+
+    input:
+        file clipfile
+    output:
+        set file("${clipfile}"), stdout into clipfile_and_framecount
+    """
+    #!/usr/bin/env bash
+    flowermodel framecount --filename $clipfile
+    """
+}
+
+
+mapseq = {x ->  vallist = []   // get tuples of frame number and video file name
+                for (n in 0..<(x[1] as int)){
+                    vallist.add([n, x[0]])
+                }
+              return vallist
+          }
+
+clipfile_and_framecount_seq = clipfile_and_framecount
+                             .map{mapseq(it)}
+                             .flatMap()
+
+
+process get_blobs{
+    conda params.condaenv
+    
+    input:
+        set clipfile, framecount from clipfile_and_framecount_seq
+    output:
+        stdout into tmp
+    """
+    #!/usr/bin/env bash
+    echo "flowermodel blob --filename $clipfile --frame-index $framecount  --out-dir {out_dir}"
+    """
+}
+
+tmp.view()
 
 /*
 process get_file_list {
