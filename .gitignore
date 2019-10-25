@@ -121,3 +121,5 @@ temp
 nextflow/work
 nextflow/.nextflow*
 nextflow/report.html*
+
+rdffiles
