@@ -4,7 +4,7 @@ from tqdm import tqdm
 import copy
 
 class __vidrdf__:
-    def __init__(self, blobfile, vidfile, nbins=100, shellwidth=1):
+    def __init__(self, blobfile, vidfile=None, nbins=100, shellwidth=1):
         import imageio
         self.nbins = nbins
         self.shellwidth = shellwidth
@@ -12,22 +12,22 @@ class __vidrdf__:
             self.blobs = pd.read_csv(blobfile)
         else:
             self.blobs = blobfile
-#         if type(vidfile) == str:
-#             vid = imageio.get_reader(vidfile,  'ffmpeg')
-#             self.vid = copy.copy(vid)
-#         else:
-#             self.vid = vidfile
-#         self.num_frames = self.vid.count_frames()
-#         (self.L1, self.L2, _) = self.vid.get_data(0).shape
-#         self.maxL = min(self.L1, self.L2)
+        if type(vidfile) == str:
+            vid = imageio.get_reader(vidfile,  'ffmpeg')
+            self.vid = copy.copy(vid)
+        else:
+            self.vid = vidfile
+        self.num_frames = self.vid.count_frames()
+        (self.L1, self.L2, _) = self.vid.get_data(0).shape
+        self.maxL = min(self.L1, self.L2)
 
 class vidrdf(__vidrdf__):
-    def __init__(self, blobfile, vidfile, **kwargs):
+    def __init__(self, blobfile, vidfile=None, **kwargs):
         self.blobfile = blobfile
-#         self.vidfile = vidfile
+        self.vidfile = vidfile
 
         super().__init__(self.blobfile, self.vidfile, **kwargs)
-#         self.vid_qc()
+        self.vid_qc()
 
     def __get_rdf__(self, color1, color2):       
         rdfs = []
@@ -37,15 +37,15 @@ class vidrdf(__vidrdf__):
         rvals = rdf.rvals
         return rvals, np.array(rdfs)
 
-#     def vid_qc(self):
-#         assert np.all(np.diff(np.array([self.vid.get_data(0).shape for n in range(self.num_frames)]), 
-#                       axis=0) == 0), 'Some video frames have a different size'
+    def vid_qc(self):
+        assert np.all(np.diff(np.array([self.vid.get_data(0).shape for n in range(self.num_frames)]), 
+                      axis=0) == 0), 'Some video frames have a different size'
            
-#         if self.L1!=self.L2:
-#             print('The images are not exactly squares. Using the minumum dimension for analysis')
+        if self.L1!=self.L2:
+            print('The images are not exactly squares. Using the minumum dimension for analysis')
 
     def get_rdf(self, color1, color2, save_to_file=True):
-        self.rdf_file = '{:s}.blob.rdf.color_{:s}{:s}.csv'.format(self.moviefile, color1, color2)
+        self.rdf_file = '{:s}.blob.rdf.color_{:s}{:s}.csv'.format(self.vidfile, color1, color2)
         self.rdf_file = self.rdf_file.replace('/', '.')
         rvals, rdfs = self.__get_rdf__(color1, color2)
         rdfdf = pd.DataFrame(rdfs, columns=rvals)
