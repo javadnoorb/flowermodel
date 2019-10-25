@@ -86,7 +86,7 @@ process combine_blobfiles{
 blobsfile_and_clipfiles = blobsfile.join(clipfile2) // join the two based on clip id
 
 process get_rdfs {
-    publishDir rdffiles, mode: 'link', overwrite: true
+    publishDir 'rdffiles', mode: 'link', overwrite: true
     conda params.condaenv
 
     input:
@@ -104,6 +104,3 @@ process get_rdfs {
     rdfobj.get_rdfs_for_all_colorpairs()
     """
 }
-
-
-rdffiles.view()
