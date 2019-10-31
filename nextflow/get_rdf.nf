@@ -3,6 +3,7 @@
 movfile = Channel.fromPath(params.moviespath+'/*.mov')
 
 process clip_files_if_needed{
+    publishDir 'movfiles', mode: 'link', overwrite: true
     conda params.condaenv
 
     input:

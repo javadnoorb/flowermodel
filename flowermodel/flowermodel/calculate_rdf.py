@@ -128,9 +128,8 @@ def get_mov_metadata(data_path):
     import os
     import glob
     import re
-    
-    rdffiles = glob.glob(os.path.join(data_path, 'blobs/*.color_*.csv'))
-    rdffiles += glob.glob(os.path.join(data_path, 'blobs/*/*.color_*.csv'))
+        
+    rdffiles = glob.glob(os.path.join(data_path, '*.color_*.csv'))
     rdffiles = pd.DataFrame(rdffiles, columns=['rdffile'])
     PACKAGE_DATA_PATH = pkg_resources.resource_filename('flowermodel', 'data/')
     clipmeta = pd.read_csv(os.path.join(PACKAGE_DATA_PATH, 'clip-metadata.txt'), sep='\t')
@@ -140,11 +139,14 @@ def get_mov_metadata(data_path):
     rdffiles = pd.merge(rdffiles, clipmeta, on='movfile', how='left')    
     return rdffiles
 
-# def get_maxrdf_locs(data_path):
-#     def get_maxrdf_loc(rdf_file):
-#         rdf = pd.read_csv(rdf_file, index_col=0)
-#         return float(rdf.mean().idxmax())
+def get_maxrdf_locs(data_path):
+    def get_maxrdf_loc(rdf_file, min_radius=5):
+        rdf = pd.read_csv(rdf_file, index_col=0)
+        rdfmean = rdf.mean()
+        rdfmean.index = rdfmean.index.astype(float)
+        rdfmean = rdfmean[rdfmean.index > min_radius]
+        return float(rdfmean.idxmax())
 
-#     rdffiles = get_mov_metadata(data_path)
-#     rdffiles['maxrdf_loc'] = rdffiles['rdffile'].map(get_maxrdf_loc)
-#     return rdffiles
+    rdffiles = get_mov_metadata(data_path)
+    rdffiles['maxrdf_loc'] = rdffiles['rdffile'].map(get_maxrdf_loc)
+    return rdffiles
